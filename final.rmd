@@ -1,0 +1,22 @@
+---
+title: "COVID19 Final Project"
+author: "Jared, Matt, Megan"
+date: "Spring 2022"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      fig.width=10, 
+                      fig.height=6, 
+                      fig.align = "center")
+
+# Load the needed package(s) here
+pacman::p_load(tidyverse, COVID19)
+cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-6-01")
+# Change the default theme below:
+theme_set(theme_bw())
+
+```
