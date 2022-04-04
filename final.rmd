@@ -14,27 +14,95 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 
 # Load the needed package(s) here
-pacman::p_load(tidyverse, COVID19, maps)
+pacman::p_load(tidyverse, COVID19,gridExtra)
 cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
 #Renamed the administrative_area_level_2 to state just for convenience
 cov19 <- rename(cov19, state = administrative_area_level_2)
 cov19 <- as.tibble(cov19)
 # Change the default theme below:
 theme_set(theme_bw())
+```
+The next section is data cleaning
 
+
+
+```{r setup, message = FALSE, warning = FALSE}
+# total count of cov19 at last day of data
 cov19LastDay <- cov19 %>%
   filter(date == "2021-06-01")
+# Cov19 by region
+cov19South <- cov19 %>% 
+  filter(state %in% 
+           c('Alabama', 'Florida', 'Georgia', 'Mississippi', 
+             'South Carolina','Arkansas', 'Louisiana', 'Oklahoma', 
+             'Texas', 'Kentucky', 'North Carolina', 'Tennessee', 'Virginia', 'West Virginia'))
+cov19NorthE <- cov19 %>% 
+  filter(state %in% 
+           c('Connecticut', 'Maine', 'Massachusetts', 'New Hampshire', 
+             'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Pennsylvania',
+             'Delaware', 'District of Columbia','Maryland'))
+cov19MidW <- cov19 %>%
+  filter(state %in%
+           c('Iowa', 'Kansas', 'Missouri', 'Nebraska', 'North Dakota', 
+             'South Dakota', 'Illinois', 'Indiana', 'Michigan', 'Minnesota', 'Ohio', 'Wisconsin'))
+cov19West <- cov19 %>%
+  filter(state %in%
+           c('California', 'Hawaii', 'Nevada','Oregon', 'Washington','Arizona', 
+             'Colorado', 'Idaho', 'Montana', 'New Mexico', 'Utah', 'Wyoming'))
+```
+The next section is graphing
 
 
 
 
+```{r setup, message = FALSE, warning = FALSE}
 
-plot_usmap(data = cov19,
-           values = 'confirmed',
-           regions = "state",
-           color = 'gray50') +
-  scale_fill_continuous(low = 'white', high = 'blue') +
-  labs(fill = "Adjusted Opiate \nDeath Rate") + 
-  theme(legend.position = "top")
+# North East plot
+northEastPlot <- ggplot(cov19NorthE, aes(x = confirmed, y = deaths, color = state))+
+  geom_line()+
+  labs(title = "North East Covid19 Cases",
+       x = "Confirmed Cases",
+       y = "Deaths",
+       color = "States")+
+  theme(text=element_text(size=6),
+        legend.position="bottom")+
+  scale_x_continuous(labels = scales::comma)
+northEastPlot
+# South Plot
+southPlot <- ggplot(cov19South, aes(x = confirmed, y = deaths, color = state))+
+  geom_line()+
+  labs(title = "South Covid19 Cases",
+       x = "Confirmed Cases",
+       y = "Deaths",
+       color = "States")+
+  theme(text=element_text(size=6),
+        legend.position="bottom")+
+  scale_x_continuous(labels = scales::comma)
+# Midwest plot
+midWestPlot <- ggplot(cov19MidW, aes(x = confirmed, y = deaths, color = state))+
+  geom_line()+
+  labs(title = "Midwest Covid19 Cases",
+       x = "Confirmed Cases",
+       y = "Deaths",
+       color = "States")+
+  theme(text=element_text(size=6),
+        legend.position="bottom")+
+  scale_x_continuous(labels = scales::comma)
+# West plot
+westPlot <- ggplot(cov19West, aes(x = confirmed, y = deaths, color = state))+
+  geom_line()+
+  labs(title = "West Covid19 Cases",
+       x = "Confirmed Cases",
+       y = "Deaths",
+       color = "States")+
+  theme(text=element_text(size=6),
+        legend.position="bottom")+
+  scale_x_continuous(labels = scales::comma)
+```
+Grid arrange of the 4 plots above
+
+```{r setup, message = FALSE, warning = FALSE}
+
+grid.arrange(northEastPlot,southPlot,midWestPlot,westPlot, ncol = 2)
 
 ```
