@@ -14,9 +14,27 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 
 # Load the needed package(s) here
-pacman::p_load(tidyverse, COVID19)
-cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-6-01")
+pacman::p_load(tidyverse, COVID19, maps)
+cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
+#Renamed the administrative_area_level_2 to state just for convenience
+cov19 <- rename(cov19, state = administrative_area_level_2)
+cov19 <- as.tibble(cov19)
 # Change the default theme below:
 theme_set(theme_bw())
+
+cov19LastDay <- cov19 %>%
+  filter(date == "2021-06-01")
+
+
+
+
+
+plot_usmap(data = cov19,
+           values = 'confirmed',
+           regions = "state",
+           color = 'gray50') +
+  scale_fill_continuous(low = 'white', high = 'blue') +
+  labs(fill = "Adjusted Opiate \nDeath Rate") + 
+  theme(legend.position = "top")
 
 ```
