@@ -17,8 +17,12 @@ knitr::opts_chunk$set(echo = TRUE,
 pacman::p_load(tidyverse, COVID19,gridExtra)
 cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
 #Renamed the administrative_area_level_2 to state just for convenience
-cov19 <- rename(cov19, state = administrative_area_level_2)
+cov19 <- rename(cov19, state = administrative_area_level_2) %>%
+  mutate(deathRate = (deaths/confirmed)*100,
+         infectionRate = (confirmed/population)*100,
+         vaccineRate = (vaccines/population)*100, na.rm = TRUE)
 cov19 <- as.tibble(cov19)
+cov19
 # Change the default theme below:
 theme_set(theme_bw())
 ```
