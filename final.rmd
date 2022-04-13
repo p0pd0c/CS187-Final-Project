@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE,
 # Load the needed package(s) here
 pacman::p_load(tidyverse, COVID19,gridExtra)
 cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
-#Renamed the administrative_area_level_2 to state just for convenience
+#Renamed the administrative_area_level_2 to state just for convenience and added three percentage variables
 cov19 <- rename(cov19, state = administrative_area_level_2) %>%
   mutate(deathRate = (deaths/confirmed)*100,
          infectionRate = (confirmed/population)*100,
@@ -26,9 +26,8 @@ cov19
 # Change the default theme below:
 theme_set(theme_bw())
 ```
+
 The next section is data cleaning
-
-
 
 ```{r setup, message = FALSE, warning = FALSE}
 # total count of cov19 at last day of data
@@ -54,10 +53,8 @@ cov19West <- cov19 %>%
            c('California', 'Hawaii', 'Nevada','Oregon', 'Washington','Arizona', 
              'Colorado', 'Idaho', 'Montana', 'New Mexico', 'Utah', 'Wyoming'))
 ```
+
 The next section is graphing
-
-
-
 
 ```{r setup, message = FALSE, warning = FALSE}
 
@@ -103,10 +100,55 @@ westPlot <- ggplot(cov19West, aes(x = confirmed, y = deaths, color = state))+
         legend.position="bottom")+
   scale_x_continuous(labels = scales::comma)
 ```
+
 Grid arrange of the 4 plots above
 
 ```{r setup, message = FALSE, warning = FALSE}
 
-grid.arrange(northEastPlot,southPlot,midWestPlot,westPlot, ncol = 2)
+grid.arrange(northEastPlot,midWestPlot, southPlot,westPlot, ncol = 2)
+
+```
+
+Plots for vaccine rate vs death rate and infection rate vs death rate with a grid arrange
+
+```{r setup, message = FALSE, warning = FALSE}
+# plot for death rate vs vaccine rate for each day
+cov19Average <- cov19 %>% group_by(date) %>%
+  summarise(mean(infectionRate, na.rm = TRUE), mean(deathRate, na.rm = TRUE), mean(vaccineRate, na.rm = TRUE))
+
+deathVaccineRatesPlot <- ggplot(cov19Average, aes(x = cov192$`mean(vaccineRate, na.rm = TRUE)`, y = cov192$`mean(deathRate, na.rm = TRUE)`))+
+  geom_line()+
+  labs(x = "Vaccine Rate",
+       y = "Death Rate",
+       title = "Death Rate and Vaccine Rate")
+
+deathInfectionRatesPlot <- ggplot(cov19Average, aes(x = cov192$`mean(infectionRate, na.rm = TRUE)`, y = cov192$`mean(deathRate, na.rm = TRUE)`))+
+  geom_line()+
+  labs(x = "Infection Rate",
+       y = "Death Rate",
+       title = "Death Rate and Infection Rate")
+
+
+# Grid Arrange of two graphs
+grid.arrange(deathInfectionRatesPlot, deathVaccineRatesPlot)
+```
+
+Map of US with infection as the value
+
+```{r setup, message = FALSE, warning = FALSE}
+#filter out non states
+
+cov19StatesOnly <- cov19 %>% group_by(state) %>% filter(state != "American Samoa", state != "Puerto Rico", state != "Northern Mariana Islands", state != "District of Columbia", state != "Guam", state != "Virgin Islands")
+
+## Map of covid cases
+
+plot_usmap(data = cov19StatesOnly,
+           values = 'infectionRate',
+           regions = 'state',
+           color = "black")+
+  scale_fill_continuous(low = 'light blue', high = 'red')+
+  labs(fill = "Infection Rate",
+       title = "Covid 19 Infection Rate")+
+  theme(plot.title = element_text(hjust = .5, size = 16))
 
 ```
