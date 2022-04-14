@@ -5,31 +5,31 @@ date: "Spring 2022"
 output:
   word_document: default
   html_document: default
+  pdf_document: default
 ---
 
-```{r setup, message = FALSE, warning = FALSE}
+```{r setup, message = FALSE, warning = FALSE, verbose = FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.width=10, 
                       fig.height=6, 
                       fig.align = "center")
 
 # Load the needed package(s) here
-pacman::p_load(tidyverse, COVID19,gridExtra)
+pacman::p_load(tidyverse, COVID19,gridExtra, usmap)
 cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
 #Renamed the administrative_area_level_2 to state just for convenience and added three percentage variables
 cov19 <- rename(cov19, state = administrative_area_level_2) %>%
   mutate(deathRate = (deaths/confirmed)*100,
          infectionRate = (confirmed/population)*100,
          vaccineRate = (vaccines/population)*100, na.rm = TRUE)
-cov19 <- as.tibble(cov19)
-cov19
+
 # Change the default theme below:
 theme_set(theme_bw())
 ```
 
 The next section is data cleaning
 
-```{r setup, message = FALSE, warning = FALSE}
+```{r dataClean, message = FALSE, warning = FALSE}
 # total count of cov19 at last day of data
 cov19LastDay <- cov19 %>%
   filter(date == "2021-06-01")
@@ -56,7 +56,7 @@ cov19West <- cov19 %>%
 
 The next section is graphing
 
-```{r setup, message = FALSE, warning = FALSE}
+```{r caseGraph, message = FALSE, warning = FALSE}
 
 # North East plot
 northEastPlot <- ggplot(cov19NorthE, aes(x = confirmed, y = deaths, color = state))+
@@ -68,7 +68,7 @@ northEastPlot <- ggplot(cov19NorthE, aes(x = confirmed, y = deaths, color = stat
   theme(text=element_text(size=6),
         legend.position="bottom")+
   scale_x_continuous(labels = scales::comma)
-northEastPlot
+
 # South Plot
 southPlot <- ggplot(cov19South, aes(x = confirmed, y = deaths, color = state))+
   geom_line()+
@@ -103,26 +103,29 @@ westPlot <- ggplot(cov19West, aes(x = confirmed, y = deaths, color = state))+
 
 Grid arrange of the 4 plots above
 
-```{r setup, message = FALSE, warning = FALSE}
+```{r graphArrange, message = FALSE, warning = FALSE}
 
 grid.arrange(northEastPlot,midWestPlot, southPlot,westPlot, ncol = 2)
 
 ```
 
+
 Plots for vaccine rate vs death rate and infection rate vs death rate with a grid arrange
 
-```{r setup, message = FALSE, warning = FALSE}
+
+```{r averagePlot, message = FALSE, warning = FALSE}
+
 # plot for death rate vs vaccine rate for each day
 cov19Average <- cov19 %>% group_by(date) %>%
   summarise(mean(infectionRate, na.rm = TRUE), mean(deathRate, na.rm = TRUE), mean(vaccineRate, na.rm = TRUE))
 
-deathVaccineRatesPlot <- ggplot(cov19Average, aes(x = cov192$`mean(vaccineRate, na.rm = TRUE)`, y = cov192$`mean(deathRate, na.rm = TRUE)`))+
+deathVaccineRatesPlot <- ggplot(cov19Average, aes(x = cov19Average$`mean(vaccineRate, na.rm = TRUE)`, y = cov19Average$`mean(deathRate, na.rm = TRUE)`))+
   geom_line()+
   labs(x = "Vaccine Rate",
        y = "Death Rate",
        title = "Death Rate and Vaccine Rate")
 
-deathInfectionRatesPlot <- ggplot(cov19Average, aes(x = cov192$`mean(infectionRate, na.rm = TRUE)`, y = cov192$`mean(deathRate, na.rm = TRUE)`))+
+deathInfectionRatesPlot <- ggplot(cov19Average, aes(x = cov19Average$`mean(infectionRate, na.rm = TRUE)`, y = cov19Average$`mean(deathRate, na.rm = TRUE)`))+
   geom_line()+
   labs(x = "Infection Rate",
        y = "Death Rate",
@@ -135,7 +138,7 @@ grid.arrange(deathInfectionRatesPlot, deathVaccineRatesPlot)
 
 Map of US with infection as the value
 
-```{r setup, message = FALSE, warning = FALSE}
+```{r mapPlot, message = FALSE, warning = FALSE}
 #filter out non states
 
 cov19StatesOnly <- cov19 %>% group_by(state) %>% filter(state != "American Samoa", state != "Puerto Rico", state != "Northern Mariana Islands", state != "District of Columbia", state != "Guam", state != "Virgin Islands")
