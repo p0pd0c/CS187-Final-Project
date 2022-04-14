@@ -8,7 +8,7 @@ output:
   pdf_document: default
 ---
 
-```{r setup, message = FALSE, warning = FALSE, verbose = FALSE}
+```{r setup, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.width=10, 
                       fig.height=6, 
@@ -153,5 +153,38 @@ plot_usmap(data = cov19StatesOnly,
   labs(fill = "Infection Rate",
        title = "Covid 19 Infection Rate")+
   theme(plot.title = element_text(hjust = .5, size = 16))
+
+```
+
+Plot on infection rate with face coverings and without face coverings
+
+
+```{r infectionBarChart, message = FALSE, warning = FALSE}
+
+infectionBarChartData <- cov19 %>% 
+  group_by(facial_coverings) %>% 
+  filter(facial_coverings >= -4, na.rm = TRUE) %>%
+  summarise(sum(confirmed))
+
+
+infectionBarChart <- ggplot(infectionBarChartData, 
+                            aes(x = facial_coverings, y = infectionBarChartData$`sum(confirmed)`))+
+  geom_col(aes(fill = facial_coverings))+
+  scale_y_continuous(labels = scales::comma)+
+  labs(x = "Facial Covering Policy",
+       y = "Cases",
+       title = "Cases And Facial Covering Policy")+
+  theme(legend.position = "none")+
+  xlim(-5,5)
+
+
+
+
+infectionBarChart
+
+
+
+
+
 
 ```
