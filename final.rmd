@@ -175,7 +175,8 @@ infectionBarChart <- ggplot(infectionBarChartData,
        y = "Cases",
        title = "Cases And Facial Covering Policy")+
   theme(legend.position = "none")+
-  xlim(-5,5)
+  scale_x_continuous(breaks = seq(-5,5,1))
+  
 
 
 
