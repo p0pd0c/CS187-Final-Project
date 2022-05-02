@@ -14,8 +14,8 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.height=6, 
                       fig.align = "center")
 
-# Load the needed package(s) here
-pacman::p_load(tidyverse, COVID19,gridExtra, usmap)
+ #Load the needed package(s) here
+pacman::p_load(tidyverse, COVID19,gridExtra, usmap, rpart, rpart.plot, caret, caTools)
 cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
 #Renamed the administrative_area_level_2 to state just for convenience and added three percentage variables
 cov19 <- rename(cov19, state = administrative_area_level_2) %>%
@@ -189,3 +189,87 @@ infectionBarChart
 
 
 ```
+```{r decision tree, message = FALSE, warning = FALSE}
+
+cov19StatesOnly <- cov19StatesOnly %>% mutate(region = NA)
+
+West <- c('California', 'Hawaii', 'Nevada','Oregon', 'Washington','Arizona', 'Colorado', 'Idaho', 'Montana', 'New Mexico', 'Utah', 'Wyoming')
+
+Midwest <-  c('Iowa', 'Kansas', 'Missouri', 'Nebraska', 'North Dakota', 
+             'South Dakota', 'Illinois', 'Indiana', 'Michigan', 'Minnesota', 'Ohio', 'Wisconsin')
+
+NorthEast <-  c('Connecticut', 'Maine', 'Massachusetts', 'New Hampshire', 
+             'Rhode Island', 'Vermont', 'New Jersey', 'New York', 'Pennsylvania',
+             'Delaware', 'District of Columbia','Maryland')
+
+South <- c('Alabama', 'Florida', 'Georgia', 'Mississippi', 
+             'South Carolina','Arkansas', 'Louisiana', 'Oklahoma', 
+             'Texas', 'Kentucky', 'North Carolina', 'Tennessee', 'Virginia', 'West Virginia')
+
+for(i in 1:nrow(cov19StatesOnly)){
+  for(j in 1:length(West)){
+    if(cov19StatesOnly$state[i] == West[j]){
+      cov19StatesOnly$region[i] <- "West"
+    }
+  }
+  for(j in 1:length(NorthEast)){
+    if(cov19StatesOnly$state[i] == NorthEast[j]){
+      cov19StatesOnly$region[i] <- "Northeast"
+    }
+  }
+  for(j in 1:length(South)){
+    if(cov19StatesOnly$state[i] == South[j]){
+      cov19StatesOnly$region[i] <- "South"
+    }
+  }
+  for(j in 1:length(Midwest)){
+    if(cov19StatesOnly$state[i] == Midwest[j]){
+      cov19StatesOnly$region[i] <- "Midwest"
+    }
+  }
+}
+
+cov19Tree <- cov19StatesOnly %>% select(testing_policy, vaccination_policy, facial_coverings, workplace_closing, school_closing, transport_closing, region)
+split <-  sample.split(cov19Tree$region, SplitRatio = 0.75)
+trainingCov19 <- subset(cov19Tree, subset = split, select = -state)
+testingCov19 <- subset(cov19Tree, subset = !split, select = -state)
+
+testingCov19$region <- as.factor(testingCov19$region)
+
+cov19DT <- rpart(formula = region ~ .,
+                     data = trainingCov19,
+                     method = "class",
+                     parms = list(split = "information"),
+                     minsplit = 0, 
+                     minbucket = 0,
+                     cp = -1)
+
+
+cov19DTPruned$cptable %>% 
+  data.frame() %>% 
+  filter(xerror < min(xerror) + 0.006795436)
+
+cov19DTPruned <- prune(cov19DT,
+                       cp = .01)
+
+rpart.plot(cov19DTPruned, 
+           digits = 4,
+           fallen.leaves = TRUE,
+           type = 5, 
+           extra = 101,
+           box.palette = 'BlGnYl',
+           shadow.col = 'gray',
+           legend.x = NA)
+
+
+cov19_pred <- predict(object = cov19DTPruned,
+                       newdata = testingCov19,
+                       type = "class")
+
+cm_cov19 <- 
+  confusionMatrix(data = cov19_pred, 
+                  reference = testingCov19$region,
+                  positive = c("Midwest", "Northeast","West", "South"),
+                  dnn = c('predicted', 'actual')) 
+```
+
