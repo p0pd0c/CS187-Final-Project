@@ -109,9 +109,7 @@ grid.arrange(northEastPlot,midWestPlot, southPlot,westPlot, ncol = 2)
 
 ```
 
-
 Plots for vaccine rate vs death rate and infection rate vs death rate with a grid arrange
-
 
 ```{r averagePlot, message = FALSE, warning = FALSE}
 
@@ -162,7 +160,6 @@ plot_usmap(data = cov19StatesOnly,
 
 Plot on infection rate with face coverings and without face coverings
 
-
 ```{r infectionBarChart}
 
 infectionBarChartData <- cov19 %>% 
@@ -196,10 +193,8 @@ infectionBarChart
 
 
 
-
-
-
 ```
+
 ```{r decision tree, message = FALSE, warning = FALSE}
 
 cov19StatesOnly <- cov19StatesOnly %>% mutate(region = NA)
@@ -256,12 +251,13 @@ cov19DT <- rpart(formula = region ~ .,
                      cp = -1)
 
 
-cov19DTPruned$cptable %>% 
-  data.frame() %>% 
-  filter(xerror < min(xerror) + 0.006795436)
 
 cov19DTPruned <- prune(cov19DT,
                        cp = .0095)
+
+cov19DTPruned$cptable %>% 
+  data.frame() %>% 
+  filter(xerror < min(xerror) + 0.006795436)
 
 rpart.plot(cov19DTPruned, 
            digits = 4,
@@ -285,4 +281,3 @@ cm_cov19 <-
 
 cm_cov19
 ```
-
