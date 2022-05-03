@@ -123,13 +123,17 @@ deathVaccineRatesPlot <- ggplot(cov19Average, aes(x = cov19Average$`mean(vaccine
   geom_line()+
   labs(x = "Vaccine Rate",
        y = "Death Rate",
-       title = "Death Rate and Vaccine Rate")
+       title = "Death Rate and Vaccine Rate")+
+  scale_y_continuous(label = scales::percent_format(scale = 1, accuracy = .01))+
+  scale_x_continuous(label = scales::percent_format(scale = 1))
 
 deathInfectionRatesPlot <- ggplot(cov19Average, aes(x = cov19Average$`mean(infectionRate, na.rm = TRUE)`, y = cov19Average$`mean(deathRate, na.rm = TRUE)`))+
   geom_line()+
   labs(x = "Infection Rate",
        y = "Death Rate",
-       title = "Death Rate and Infection Rate")
+       title = "Death Rate and Infection Rate")+
+  scale_y_continuous(label = scales::percent_format(scale = 1, accuracy = .01))+
+  scale_x_continuous(label = scales::percent_format(scale = 1, accuracy = 1))
 
 
 # Grid Arrange of two graphs
@@ -257,7 +261,7 @@ cov19DTPruned$cptable %>%
   filter(xerror < min(xerror) + 0.006795436)
 
 cov19DTPruned <- prune(cov19DT,
-                       cp = .01)
+                       cp = .0095)
 
 rpart.plot(cov19DTPruned, 
            digits = 4,
@@ -278,5 +282,7 @@ cm_cov19 <-
                   reference = testingCov19$region,
                   positive = c("Midwest", "Northeast","West", "South"),
                   dnn = c('predicted', 'actual')) 
+
+cm_cov19
 ```
 
