@@ -159,13 +159,20 @@ plot_usmap(data = cov19StatesOnly,
 Plot on infection rate with face coverings and without face coverings
 
 
-```{r infectionBarChart, message = FALSE, warning = FALSE}
+```{r infectionBarChart}
 
 infectionBarChartData <- cov19 %>% 
   group_by(facial_coverings) %>% 
-  filter(facial_coverings >= -4, na.rm = TRUE) %>%
-  summarise(sum(confirmed))
+  filter(facial_coverings >= -4, na.rm = TRUE)
 
+for(i in 1:nrow(infectionBarChartData)){
+  if(infectionBarChartData$facial_coverings[i] <= 0){
+    infectionBarChartData$facial_coverings[i] <- 0
+  }
+}
+
+infectionBarChartData <- infectionBarChartData %>% 
+  summarise(sum(confirmed))
 
 infectionBarChart <- ggplot(infectionBarChartData, 
                             aes(x = facial_coverings, y = infectionBarChartData$`sum(confirmed)`))+
