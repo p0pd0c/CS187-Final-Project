@@ -147,6 +147,7 @@ cov19StatesOnly <- cov19 %>% group_by(state) %>% filter(state != "American Samoa
 
 ## Map of covid cases
 
+
 plot_usmap(data = cov19StatesOnly,
            values = 'infectionRate',
            regions = 'state',
@@ -173,18 +174,17 @@ for(i in 1:nrow(infectionBarChartData)){
 }
 
 infectionBarChartData <- infectionBarChartData %>% 
-  summarise(sum(confirmed))
+  summarise(mean(infectionRate))
 
 infectionBarChart <- ggplot(infectionBarChartData, 
-                            aes(x = facial_coverings, y = infectionBarChartData$`sum(confirmed)`))+
-  geom_col(aes(fill = facial_coverings))+
-  scale_y_continuous(labels = scales::comma)+
+                            aes(x = facial_coverings, y = `mean(infectionRate)`))+
+  geom_col(aes(fill = "black"))+
+  scale_y_continuous(labels = scales::comma, breaks = seq(0,20,4))+
   labs(x = "Facial Covering Policy",
        y = "Cases",
        title = "Cases And Facial Covering Policy")+
   theme(legend.position = "none")+
   scale_x_continuous(breaks = seq(-5,5,1))
-  
 
 
 
