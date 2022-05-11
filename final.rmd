@@ -8,6 +8,10 @@ output:
   pdf_document: default
 ---
 
+### Introduction
+
+Over the last two years, Covid-19 has transformed the world we live in and the way we live in it. From social distancing guidelines to mask mandates contingent on vaccination statuses, the conversations we have today would be seen as completely foreign two and a half years ago. Covid-19 will hopefully be the only pandemic any of us will live through. This project aims to contribute to a broader general understanding of the data available on this pandemic to spread awareness of factors that mitigate the effects of Covid. Every day, we are inundated with information about Covid -- case numbers, infection rates, surges, and more. It is important to understand where this data comes from, and what it means, and to try to identify some common misconceptions that we -- or our loved ones -- may hold. It is pertinent to know how our activities and risk-increasing or risk-mitigating behavior can influence the very real and tangible outcomes of this. It is important to understand how a variety of factors may impact a community's response to Covid, such as economic support, local government action, and preventative measures like mask mandates and social distancing policies. The data we used came from the R packages COVID19 and Covid19us. It is comprised of live data collected on the Covid stats in the world and specifically in the United States. This is observational data provided by the CDC, the New York Times, and the John Hopkins Center for Systems Science and Engineering. Potential sampling bias could be present because, even though this is observational data that is collected, it can only account for reported Covid cases. As we know, some people get Covid and are asymptomatic so they might not even know they have it and therefore it would not necessarily be reported. Therefore, the measurements could reflect a slight underrepresentation of the Covid cases. The data on vaccines by the CDC is unlikely to contain bias because of the strict record-keeping that is necessary to keep track of who has gotten the vaccine and when they received their dose(s). There is likely no bias in the questions asked because the answers are objective and the measurements are reported health data. To organize the data, we separated the original Covid19 dataset for the United States into four regions: the Northeast, South, Midwest, and West. This cleaning was needed to answer our questions about regional Covid responses and outcomes. There have been many different responses to Covid, many of which have been politicized. It will be interesting to see if a region like the Northeast has had different outcomes than, say, the South and if these differences have to do with the enforcement of Covid-related policies. Furthermore, it will be interesting to see if all regions in the United States followed the same timeline in enforcement and if this had an impact on the outcomes.
+
 ```{r setup, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       fig.width=10, 
@@ -16,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE,
 
  #Load the needed package(s) here
 pacman::p_load(tidyverse, COVID19,gridExtra, usmap, rpart, rpart.plot, caret, caTools)
-cov19 <- covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
+cov19 <- Covid19(country = c("US"), level = 2, start = "2020-12-01", end = "2021-06-01")
 #Renamed the administrative_area_level_2 to state just for convenience and added three percentage variables
 cov19 <- rename(cov19, state = administrative_area_level_2) %>%
   mutate(deathRate = (deaths/confirmed)*100,
@@ -27,7 +31,7 @@ cov19 <- rename(cov19, state = administrative_area_level_2) %>%
 theme_set(theme_bw())
 ```
 
-The next section is data cleaning
+### Data Visualizations
 
 ```{r dataClean, message = FALSE, warning = FALSE}
 # total count of cov19 at last day of data
@@ -53,8 +57,6 @@ cov19West <- cov19 %>%
            c('California', 'Hawaii', 'Nevada','Oregon', 'Washington','Arizona', 
              'Colorado', 'Idaho', 'Montana', 'New Mexico', 'Utah', 'Wyoming'))
 ```
-
-The next section is graphing
 
 ```{r caseGraph, message = FALSE, warning = FALSE}
 
@@ -101,15 +103,13 @@ westPlot <- ggplot(cov19West, aes(x = confirmed, y = deaths, color = state))+
   scale_x_continuous(labels = scales::comma)
 ```
 
-Grid arrange of the 4 plots above
-
 ```{r graphArrange, message = FALSE, warning = FALSE}
 
 grid.arrange(northEastPlot,midWestPlot, southPlot,westPlot, ncol = 2)
 
 ```
 
-Plots for vaccine rate vs death rate and infection rate vs death rate with a grid arrange
+To visualize the data for this project, we created line graphs, bar charts, and a choropleth U.S. map. We decided to use these visualizations because they are what we have grown accustomed to seeing in the news and on social media on Covid-related data. The choropleth U.S. map was pertinent to our research questions because we wanted to see if there were visible differences between the regions in the United States. The line graphs were useful because they gave clear indications of the infection rates based on different factors including region, vaccination rates, and death rates. The bar chart we used was helpful in providing information on infection rates based on categorical data. First, we separated the data on the states into regions: the Northeast, Midwest, South, and West. The line graphs summarize the relationships between deaths and confirmed cases in each region. The colors each represent a state in the region. Every one of the lines showed a positive relationship between the number of cases and the number of deaths. This makes sense because, as with most diseases, the more cases there are, the more deaths there are. Even with vaccines and other preventative measures, there will still be a positive relationship due to the deadliness of Covid and the fact that as more people become infected, more people will die. One very interesting thing to point out about this set of graphs is the Ohio line on the Midwest graph. Ohio's cases are represented with a purple line. At around the 950,000 case mark, Ohio's number of deaths from Covid increases very quickly, as there is a nearly vertical line at that point in the graph from 12,000 to 17,000 deaths.
 
 ```{r averagePlot, message = FALSE, warning = FALSE}
 
@@ -138,14 +138,16 @@ deathInfectionRatesPlot <- ggplot(cov19Average, aes(x = cov19Average$`mean(infec
 grid.arrange(deathInfectionRatesPlot, deathVaccineRatesPlot)
 ```
 
-Map of US with infection as the value
+The line graph of Death Rate by Infection Rate shows an inconsistent relationship between the death rate and the infection rate of Covid-19. The death rate was its highest when the infection rate was the lowest. This may be because at first when not many people had gotten Covid, it was more deadly because there were fewer treatments and because it was unrecognizable by healthcare personnel. The death rate reached its lowest point when the infection rate was about 7%, which could point to the infections becoming more common so that some people had gotten immunity and others may have been able to be treated because Covid was recognizable and the hospitals were not yet overburdened with Covid patients. The spike we see after this low could potentially represent the time when the infection rate was so high that there just were not enough hospital beds or ventilators available and more people were getting sick. The second relative low point on the graph likely represents the most recent data because the infection rate is the highest (and it would only increase over time as more and more people get Covid), but the death rate has decreased because the new variants are not as deadly and because more people are vaccinated and therefore do not suffer as many hospitalizations from Covid-19.
+
+The line graph of Death Rate by Vaccination Rate is an interesting comparison to the previous graph. This line graph shows the relationship between the vaccination rate against Covid-19 and the death rates. The death rate was at one of its highest peaks when the vaccination rate was at 0%, which makes sense given that Covid-19 was a new disease in everyones' bodies and a lot of people were dying before we had access to the vaccine. There was a second large, longer increase in the death rate when the vaccination rate was between 30 and 45%. This could indicate the portion of time when not many people had the vaccine, but more and more people were returning to life as usual and therefore the death rate of Covid increased due to increased exposure to other individuals.
 
 ```{r mapPlot, message = FALSE, warning = FALSE}
 #filter out non states
 
 cov19StatesOnly <- cov19 %>% group_by(state) %>% filter(state != "American Samoa", state != "Puerto Rico", state != "Northern Mariana Islands", state != "District of Columbia", state != "Guam", state != "Virgin Islands")
 
-## Map of covid cases
+## Map of Covid cases
 
 
 plot_usmap(data = cov19StatesOnly,
@@ -159,7 +161,7 @@ plot_usmap(data = cov19StatesOnly,
 
 ```
 
-Plot on infection rate with face coverings and without face coverings
+The U.S. plot shows the various infection rates for each state across the U.S. We used infection rates rather than confirmed cases because the infection rate gives a better indication of how much each state has been infected with Covid. This is because the infection rate is a proportion, meaning it represents the percentage of the population to get Covid. For example, even though California has had significantly more Covid cases than North Dakota, North Dakota has a much higher infection rate. There are very minimal patterns in the graph, but one small pattern is that New England has relatively low Covid rates, as seen by the light blue colors. This pattern makes sense as New England has been one of the best regions since the beginning of the pandemic in preventing Covid from spreading. In addition to this, out of the metropolitan areas, Vermont and New Hampshire are very rural and in turn, naturally, promote social distancing. Nonetheless, the infection rate for Covid is generally consistent for most of the nation, with a few exceptions, reinforcing the fact that it does not matter the precautions, Covid can infect anyone. There is not an inherent cause and effect relationship that we can point out from this data visualization because all the graph is telling us is the infection rates of the states.
 
 ```{r infectionBarChart}
 
@@ -194,6 +196,10 @@ infectionBarChart
 
 
 ```
+
+The next graph we decided to use was the bar chart of the average infection rate for each of the facial coverings policies. The variable of facial coverings is judged by a range of 0-4, with 0 being no mask policy, 1 being a recommendation of a mask, 2 being a mask is required in some situations, 3 being a mask is required in all shared spaces when people are present and 4 being masks required at all times. This graph illustrates that the highest infection rate occurred when there was no mask policy in place, or when there is a lower mask policy in place. A pattern in this graph is that the more significant the mask policy is, the lower the infection rate is. This is seen in the graph as mask policies 0 and 2 have a higher infection rate than the more strict 3 and 4 mask policies. This is reasonable as when masks are required in more spaces the lower risk the public is at of getting Covid-19. In addition to this, Covid may have spread less due to increased public awareness of the virus and how to prevent the spread. Overall, the relationship appears to be causal because the trends demonstrate that the lowest mask requirements are associated with the highest infection rates.
+
+### Machine Learning
 
 ```{r decision tree, message = FALSE, warning = FALSE}
 
@@ -281,3 +287,13 @@ cm_cov19 <-
 
 cm_cov19
 ```
+
+For the machine learning aspect of this project, we decided to make a decision tree. This decision tree takes in the testing_policy, vaccination_policy, facial_coverings, workplace_closing, school_closing, and transport_closing variables in order to predict the region each case is in. After creating the tree, the tree was pruned using a cp value of .0095. This cp value allows the tree to not over fit the data while remaining reasonably accurate. Overall, this tree has an accuracy of 62.56%, which is not extremely accurate. A trade off was made in this case between readability and accuracy. The tree could be more accurate, but in order to achieve that accuracy, there would be too many nodes causing the tree to be unreadable and not user-friendly. The first two steps of the tree are, if facial_covering is greater than or equal to 3, proceed right, else proceed left. For the left side, if transport_closing is less than one, the prediction is "West", else proceed left. For the right side, if the work_place closing is less than one, the prediction is "West", else proceed left. Overall, the tree may not be super accurate, but the tree does give the ability to predict the region in which each case is based on a multitude of variables.
+
+### Conclusions
+
+In this project, we found that preventative measures appeared to be successful in reducing the infection rate of Covid. Specifically, increased vaccination rates and stricter mask requirements were associated with lower infection rates of Covid. Furthermore, there were not very strong trends in the region-specific data based on the U.S. map graph. An interesting comparison to make in the future would be the U.S. map of Covid infection rates next to a U.S. map of the 2020 election results, given the incredible politicization of an issue that is -- quite literally -- life or death and completely preventable. Overall, this project gave us a better understanding of how specific restrictions have influenced Covid rates and reinforced the concept that mask precautions are helpful in reducing Covid cases.
+
+### Limitations and Recommendations
+
+A major limitation of our research is that we were unable to identify significant causal relationships between the variables identified. Because we just looked at associations depicted in line graphs and bar graphs, we can identify the correlation between infection rates and other variables, but we cannot identify causality. To do that, we would need to further this research project by using regression methods to see if we can predict the infection rate based on a vaccination rate, death rate, or mask policy. As time passes, more data will become available about Covid-19 policies and outcomes. It will be very interesting to see if the trends we saw in our analysis will change with the loosening of Covid-related restrictions. Second boosters are also becoming available to older people and immuno-compromised individuals, which could help slow the spread and reduce the death rates even more. It is likely that second booster rates will be highest in areas with high booster rates, and this information will be available once more of the population is eligible for their second boosters.
